@@ -13,16 +13,16 @@ class LinearCode:
         
         # Validating the diagram
         # All syndromes must be unique
-        if len(set(self.get_liders_syndromes().keys())) == 2 ** self.G.shape[0]:
-            # Each line must have the same syndrome
-            for num, coset in enumerate(self.diagram):
-                unique_syndrome = set()
-                for codeword in coset:
-                    unique_syndrome.add(self.get_syndromes(codeword))
-                if len(unique_syndrome) != 1:
-                    print(f"The line {num} does not have all the same syndromes")
-        else:
-            print("Syndromes are not unique")
+        # if len(set(self.get_liders_syndromes().keys())) == 2 ** self.G.shape[0]:
+        #     # Each line must have the same syndrome
+        #     for num, coset in enumerate(self.diagram):
+        #         unique_syndrome = set()
+        #         for codeword in coset:
+        #             unique_syndrome.add(self.get_syndromes(codeword))
+        #         if len(unique_syndrome) != 1:
+        #             print(f"The line {num} does not have all the same syndromes")
+        # else:
+        #     print("Syndromes are not unique")
     
     
     def generate2parity(self, G: list) -> None:
@@ -31,7 +31,7 @@ class LinearCode:
         Args:
             G (list): Code generating matrix
         """
-        self.G = np.array(G)
+        self.G = np.array(G, dtype=int)
 
         # Separates the information bits from the identity matrix
         parity_bits = np.array([row[:-self.G.shape[0]] for row in self.G])
@@ -43,9 +43,9 @@ class LinearCode:
     def find_all_codewords(self) -> None:
         """Generates all words in the code.
         """
-        for binary in gen_all_binary(self.H.shape[0], False):
+        for binary in gen_all_binary(self.G.shape[0], False):
             self.codewords.append(dot_mod(binary, self.G))
-            
+        self.codewords = np.array(self.codewords, dtype=int) 
 
     def find_diagram(self) -> np.array:
         """Finds the standard array for the code
@@ -163,3 +163,112 @@ class LinearCode:
             return bit2str(p_codeword)
         else:
             return f"The word is not part of the code dictionary"
+
+
+    def decoderAWGN(self, vector_received: list) -> np.array:
+        """Soft decodes the vector received by the channel
+
+        Args:
+            vector_received (list): Channel received vector
+
+        Returns:
+            np.array: Decoded Vector
+        """
+        # Received vector length
+        n_symbols_sequence = len(vector_received)
+
+        # Length of information blocks
+        n_symbols_block = self.G.shape[1]
+
+        # Vector received separated in list of 'n' bits. 'n' is the information bits along with the parity bits
+        vector_received_wordblock = np.reshape(np.real(vector_received),(int(n_symbols_sequence/n_symbols_block), n_symbols_block))
+
+        # Creates matrix A from code words
+        A_matrix = 2 * self.codewords.T - 1
+
+        # Creates matrix B a by multiplying the signal received by matrix B (Multiplication is in the reals field)
+        B_matrix = vector_received_wordblock @ A_matrix
+
+        # Create a list to store the column values in each row that has the highest value and also its value
+        max_col_index_and_value = list()
+
+        # Scrolls the lines and selects the highest value and its position on the line
+        for B_row in B_matrix:
+            max_col_index_and_value.append(max(enumerate(B_row), key=lambda index: index[1]))
+
+        # Isolates information related to tuple indexes 'max_col_index_and value'
+        col_index = np.array(max_col_index_and_value, dtype=int).T[0]
+
+        # Function to convert a decimal number to binary. Obs: The binary value is spread to follow the way the code was created previously
+        dec2bit = lambda dec: [int(bit) for bit in '{:0{}b}'.format(dec, self.G.shape[0])][::-1]
+
+        # Concatenates the bits to generate the output signal
+        vector_received_softdecode = np.concatenate(([dec2bit(index) for index in col_index]))
+        
+        return vector_received_softdecode
+
+
+    def enconder(self, information_vector: list) -> np.array:
+        """Encodes the information bits next to the parity bits
+
+        Args:
+            information_vector (list): Information bits
+
+        Returns:
+            np.array: information bits with parity bits
+        """
+        n_symbols_sequence = len(information_vector)
+
+        # Length of information blocks
+        n_symbols_block = self.G.shape[0]
+
+        # Separates bits into blocks
+        tx_signal_block = np.reshape(information_vector, (int(n_symbols_sequence/n_symbols_block), self.G.shape[0]))
+
+        # Applies parity bits to each block according to the G matrix
+        tx_signal_wordblock = dot_mod(tx_signal_block, self.G)
+
+        # Place symbols to be sent side by side in a list
+        tx_signal_with_paritybits = np.reshape(tx_signal_wordblock,(1,int((n_symbols_sequence/n_symbols_block) * self.G.shape[1])))[0]
+        
+        return tx_signal_with_paritybits
+
+    
+    def modulation_BPSK(self, bit_vector: np.array) -> np.array:
+        """Convert bits to BPSK modulation
+
+        Args:
+            bit_vector (np.array): Information bits
+
+        Returns:
+            np.array: BPSK information bits
+        """
+        return (2 * bit_vector - 1)
+
+    
+    def add_RAGB(self, bit_vector: np.array, mu_AWGN: float, sigma_AWGN: float, EcN0dBs: float) -> np.array:
+        """Add white Gaussian noise to a bit vector
+
+        Args:
+            bit_vector (np.array): Bit vector
+            mu_AWGN (float): Mean AWGN
+            sigma_AWGN (float): Sigma AWGN
+            EcN0dBs (float): 
+
+        Returns:
+            np.array: Bit vector with noise
+        """
+        ## Creates the AWGN channel
+        # German number based on a Gaussian distribution
+        real_part_random = np.random.normal(mu_AWGN, sigma_AWGN, (1, len(bit_vector)))
+
+        # German number based on a Gaussian distribution multiplied by j to create an imaginary number
+        imaginary_part_random = 1j*np.random.normal(mu_AWGN, sigma_AWGN, (1, len(bit_vector)))
+
+        # Channel with real and imaginary component
+        channel = (1/np.sqrt(2))*(real_part_random + imaginary_part_random)
+
+        ## Adds noise with a power
+        rx_signal = bit_vector + (10**(-EcN0dBs/20)) * channel
+
+        return rx_signal[0]

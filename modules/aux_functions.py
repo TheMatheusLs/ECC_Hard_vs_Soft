@@ -40,12 +40,9 @@ def dot_mod(matrix_A: list, matrix_B: list, mod: int =2) -> np.array:
     try:
         product = np.array( mA @ mB) # Tenta realizar a multiplicação
 
-        product_mod = np.array([value  % mod for value in product.reshape(-1)])
+        product_mod = product % mod
 
-        if product.ndim == 1:
-            return product_mod
-        else:
-            return product_mod.reshape((product.shape[0], product.shape[1]))
+        return product_mod
         
     except:
         raise ValueError(f"The matrix format must respect the multiplication property. matrix_A = {mA.shape} e matrix_B = {mB.shape}")
