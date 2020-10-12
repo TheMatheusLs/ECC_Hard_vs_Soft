@@ -133,8 +133,8 @@ class LinearCode:
         self.dmin = dmin
 
 
-    def decoderBSC(self, received: str) -> str:
-        """Decodes the received vector, if possible.
+    def decoderBSC(self, vector_received: list) -> np.array:
+        """Decodes the received vector.
 
         Args:
             received (str): Channel received vector
@@ -142,27 +142,32 @@ class LinearCode:
         Returns:
             str: Vector after decoding
         """
+        #Convert polar to binary
+        vector_received_binary = np.real(vector_received) > 0
+        vector_received_binary = vector_received_binary.astype(int)
 
-        t = floor((self.dmin - 1)/2)
+        # Received vector length
+        n_symbols_sequence = len(vector_received_binary)
 
-        received_syndrome = self.get_syndromes(received)
+        # Length of information blocks
+        n_symbols_block = self.G.shape[1]
 
-        error_pattern = self.get_liders_syndromes()[received_syndrome]
+        # Vector received separated in list of 'n' bits. 'n' is the information bits along with the parity bits
+        vector_received_wordblock = np.reshape(np.real(vector_received_binary),(int(n_symbols_sequence/n_symbols_block), n_symbols_block))
 
-        hw = hamming_weight(error_pattern)
+        # Vector syndrome
+        vector_received_syndromes = dot_mod(vector_received_wordblock, self.H.T) 
 
-        # The code is able to correct all error patterns less than or equal to t, but it is not able to correct all error patterns of weight greater than or equal to t + 1
-        if hw >= t + 1:
-            return f"Unable to correct! Weight of the error pattern is {hw} and it is only possible to correct the smaller weight equal to {t}" 
+        # Vector error pattern 
+        vector_error_pattern = [self.get_liders_syndromes()[bit2str(syndrome)] for syndrome in vector_received_syndromes] 
+
+        # Decodes for codeword
+        vector_received_wordblock = np.array([sum_mod(codeword, str2bit(vector_error)) for codeword, vector_error  in zip(vector_received_wordblock, vector_error_pattern)])
         
-        p_codeword = sum_mod(str2bit(received), str2bit(error_pattern))
+        # remove parity bits
+        vector_received_harddecode_block = np.array([codeword_parity_bits[3:] for codeword_parity_bits in vector_received_wordblock])
 
-        p_codeword_sindrome = (dot_mod(p_codeword, self.H.T))
-
-        if p_codeword_sindrome.all() == 0:
-            return bit2str(p_codeword)
-        else:
-            return f"The word is not part of the code dictionary"
+        return vector_received_harddecode_block.reshape(-1)
 
 
     def decoderAWGN(self, vector_received: list) -> np.array:
