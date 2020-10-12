@@ -165,7 +165,7 @@ class LinearCode:
         vector_received_wordblock = np.array([sum_mod(codeword, str2bit(vector_error)) for codeword, vector_error  in zip(vector_received_wordblock, vector_error_pattern)])
         
         # remove parity bits
-        vector_received_harddecode_block = np.array([codeword_parity_bits[3:] for codeword_parity_bits in vector_received_wordblock])
+        vector_received_harddecode_block = np.array([codeword_parity_bits[self.G.shape[0]:] for codeword_parity_bits in vector_received_wordblock])
 
         return vector_received_harddecode_block.reshape(-1)
 
