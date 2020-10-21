@@ -48,8 +48,10 @@ Within this module are the files used to manipulate the elements and perform the
 
 ## References
 
-1. dedewde
-2. dedewdwd
+1. Kumar, P. Error control coding; Fundamentals and applications. 2004. ISSN 0163-6804
+2. Moon, Todd K. Error correction coding : mathematical methods and algorithms /Todd K. Moon. 2005. ISBN 0-471-64800-0
+3. [Wallis16 Github](https://github.com/Wallis16/Error-Control-Coding)
+
 
 ## Social medias
 
