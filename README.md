@@ -28,26 +28,28 @@ Within this module are the files used to manipulate the elements and perform the
 
 ## Results
 
-### Code (7,4) | $10^4$ symbols and 10 points
-![Code (7,4) 10^4 symbols 10 points](./images/code_7_4_e4sym_10points.png)
+### Linear Code (6,3) | 3e+05 symbols and 15 points
+![Linear Code (6,3) 3e+05 symbols 15 points](./images/code_6_3_3e+05sym_10pnts.png)
 
-### Code (7,4) | $10^5$ symbols and 10 points
-![Code (7,4) 10^5 symbols 10 points](./images/code_7_4_e5sym_10points.png)
+### Linear Code (6,3) | 3e+06 symbols and 15 points
+![Linear Code (6,3) 3e+06 symbols 15 points](./images/code_6_3_3e+06sym_10pnts.png)
 
-### Code (7,4) | $10^5$ symbols and 20 points
-![Code (7,4) 10^5 symbols 20 points](./images/code_7_4_e5sym_20points.png)
+### Linear Code (7,4) | 4e+05 symbols and 15 points
+![Linear Code (7,4) 4e+05 symbols 15 points](./images/code_7_4_4e+05sym_10pnts.png)
 
-### Code (7,4) | $10^6$ symbols and 20 points
-![Code (7,4) 10^6 symbols 20 points](./images/code_7_4_e6sym_20points.png)
+### Linear Code (7,4) | 4e+06 symbols and 15 points
+![Linear Code (7,4) 4e+06 symbols 15 points](./images/code_7_4_4e+06sym_10pnts.png)
 
-### Code (7,4) | $10^7$ symbols and 20 points
-![Code (7,4) 10^7 symbols 20 points](./images/code_7_4_e7sym_20points.png)
+### Linear Code (8,4) | 4e+05 symbols and 15 points
+![Linear Code (8,4) 4e+05 symbols 15 points](./images/code_8_4_4e+05sym_10pnts.png)
 
-### Code (8,4) | $10^6$ symbols and 15 points
-![Code (8,4) 10^6 symbols 15 points](./images/code_8_4_e6sym_15points.png)
+### Linear Code (8,4) | 4e+06 symbols and 15 points
+![Linear Code (8,4) 4e+06 symbols 15 points](./images/code_8_4_4e+06sym_10pnts.png)
 
-### Code (6,3) | $10^6$ symbols and 15 points
-![Code (6,3) 10^6 symbols 15 points](./images/code_6_3_e6sym_15points.png)
+## References
+
+1. dedewde
+2. dedewdwd
 
 ## Social medias
 

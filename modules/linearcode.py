@@ -103,19 +103,19 @@ class LinearCode:
         """
         return_data = {}
         for leader in self.get_leaders():
-            return_data[bit2str(dot_mod(str2bit(leader), self.H.T))] = leader 
+            return_data[bit2str(dot_mod(str2bit(leader), self.H.T))] = str2bit(leader) 
         return return_data
     
-    def get_syndromes(self, vec: str) -> str:
+    def get_syndromes(self, vec: list) -> list:
         """Calculates the syndrome for the 'vec' vector
 
         Args:
-            vec (str): Vector to be calculated the syndrome
+            vec (list): Vector to be calculated the syndrome
 
         Returns:
-            str: Vector syndrome
+            list: Vector syndrome
         """
-        return bit2str(dot_mod(str2bit(vec), self.H.T))
+        return dot_mod(vec, self.H.T)
     
 
     def find_dmin(self) -> int:
@@ -159,13 +159,15 @@ class LinearCode:
         vector_received_syndromes = dot_mod(vector_received_wordblock, self.H.T) 
 
         # Vector error pattern 
-        vector_error_pattern = [self.get_liders_syndromes()[bit2str(syndrome)] for syndrome in vector_received_syndromes] 
+        vector_error_pattern = np.array([self.get_liders_syndromes()[bit2str(syndrome)] for syndrome in vector_received_syndromes]) 
 
         # Decodes for codeword
-        vector_received_wordblock = np.array([sum_mod(codeword, str2bit(vector_error)) for codeword, vector_error  in zip(vector_received_wordblock, vector_error_pattern)])
-        
+        #vector_received_wordblock = np.array([sum_mod(codeword, str2bit(vector_error)) for codeword, vector_error  in zip(vector_received_wordblock, vector_error_pattern)])
+        vector_received_word = np.array(sum_mod(vector_received_wordblock.reshape(-1), vector_error_pattern.reshape(-1)))
+        vector_received_wordblock = np.reshape(vector_received_word,(int(n_symbols_sequence/n_symbols_block), n_symbols_block))
+
         # remove parity bits
-        vector_received_harddecode_block = np.array([codeword_parity_bits[self.G.shape[0]:] for codeword_parity_bits in vector_received_wordblock])
+        vector_received_harddecode_block = np.array([codeword_parity_bits[self.G.shape[1] - self.G.shape[0]:] for codeword_parity_bits in vector_received_wordblock])
 
         return vector_received_harddecode_block.reshape(-1)
 
